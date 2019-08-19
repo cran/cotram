@@ -1,0 +1,67 @@
+
+plot.cotram <- function(x, newdata, smooth = FALSE,
+                        type = c("distribution", "survivor", "density", "logdensity",
+                                 "cumhazard", "quantile", "trafo"),
+                        q = NULL, prob = 1:(K - 1) / K, K = 50,
+                        col = rgb(.1, .1, .1, .1), lty = 1, lwd = 1, add = FALSE, ...) {
+    
+    args <- list(...)
+    y <- variable.names(x, "response")
+    
+    if (is.null(q))
+        q <- mkgrid(x, n = K)[[y]] - as.integer(x$plus_one)
+    if (smooth)
+        q <- seq(from = min(q), to = max(q), length.out = K)
+    
+    type <- match.arg(type)
+
+    pr <- predict(x, newdata = newdata, type = type, q = q, smooth = smooth) 
+    
+    pr[!is.finite(pr)] <- NA
+    rpr <- range(pr, na.rm = TRUE)
+    if (is.null(dim(pr))) pr <- matrix(pr, ncol = 1)
+    ylim <- switch(type, "distribution" = c(0, 1),
+                   "survivor" = c(0, 1),
+                   "density" = c(0, rpr[2]),
+                   "hazard" = c(0, rpr[2]),
+                   "cumhazard" = c(0, rpr[2]),
+                   rpr)
+    if (!is.null(args$ylim)) ylim <- args$ylim
+    if (type == "quantile")  {
+        q <- prob
+        if (is.null(args$xlab)) args$xlab <- type
+        if (is.null(args$ylab)) args$ylab <- y
+    }
+    if (length(col) == 1) col <- rep(col, ncol(pr))
+    if (length(lty) == 1) lty <- rep(lty, ncol(pr))
+    if (length(lwd) == 1) lwd <- rep(lwd, ncol(pr))
+    
+    if (!add) {
+        args$x <- unclass(q)
+        args$y <- rep(rpr[1], length(q))
+        args$ylim <- ylim
+        args$xlab <- ifelse(is.null(args$xlab), y, args$xlab)
+        args$ylab <- ifelse(is.null(args$ylab), type, args$ylab)
+        args$type <- "n"
+        args$axes <- FALSE
+        do.call("plot", args)
+        if (is.factor(q)) {
+            axis(1, at = unclass(q), labels = levels(q))
+        } else {
+            axis(1)
+        }
+        axis(2)
+        box()
+    }
+    if (smooth) {
+        for (i in 1:ncol(pr)) lines(q, pr[,i], col = col[i], lty = lty[i], lwd = lwd[i])
+    } else {
+        ty <- ifelse(!length(grep(type, "density")) > 0, "s", "h")
+        for (i in 1:ncol(pr)){
+            lines(q, pr[,i], col = col[i], lty = lty[i], type = ty)
+            points(q, pr[,i], col = col[i], pch = 20, cex =.75)
+            }
+        }
+    invisible(pr)
+}
+

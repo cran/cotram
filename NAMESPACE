@@ -1,0 +1,19 @@
+
+import("mlt")
+import("variables")
+import("basefun")
+import("tram")
+importFrom("stats", "coef", "model.frame", "model.matrix", "na.omit",
+             "predict", "quantile", "variable.names", "logLik")
+importFrom("graphics", "plot", "lines", "polygon")
+importFrom("stats", "update", "residuals")
+importFrom("graphics", "axis", "box", "points")
+importFrom("grDevices", "rgb")
+
+export(cotram)
+
+S3method("as.mlt", "cotram")
+S3method("mkgrid", "cotram")
+S3method("logLik", "cotram")
+S3method("plot", "cotram")
+S3method("predict", "cotram")
