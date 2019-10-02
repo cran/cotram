@@ -1,7 +1,7 @@
 Package: cotram
 Title: Count Transformation Models
-Version: 0.1-0
-Date: 2019-08-19
+Version: 0.1-1
+Date: 2019-10-02
 Authors@R: c(
 	person(given = "Sandra", family = "Siegfried", role = "aut"),
 	person(given = "Torsten", family = "Hothorn", role = c("aut", "cre"),
@@ -22,9 +22,9 @@ VignetteBuilder: knitr
 Encoding: UTF-8
 License: GPL-2
 NeedsCompilation: no
-Packaged: 2019-08-19 05:03:34 UTC; hothorn
+Packaged: 2019-10-02 08:00:57 UTC; hothorn
 Author: Sandra Siegfried [aut],
   Torsten Hothorn [aut, cre] (<https://orcid.org/0000-0001-8301-0471>)
 Maintainer: Torsten Hothorn <Torsten.Hothorn@R-project.org>
 Repository: CRAN
-Date/Publication: 2019-08-19 08:20:16 UTC
+Date/Publication: 2019-10-02 09:40:02 UTC

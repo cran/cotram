@@ -7,7 +7,9 @@ trellis.par.set(list(plot.symbol = list(col=1,pch=20, cex=0.7),
                      box.rectangle = list(col=1),
                      box.umbrella = list(lty=1, col=1),
                      strip.background = list(col = "white"), 
-                     axis.components = list(top = list(tck = 0), right = list(tck = 0))))
+                     axis.components = list(top = list(tck = 0),
+                                            right = list(tck = 0)))
+                )
 ltheme <- canonical.theme(color = FALSE)     ## in-built B&W theme
 ltheme$strip.background$col <- "transparent" ## change strip bg
 lattice.options(default.theme = ltheme)
@@ -147,7 +149,7 @@ logLik(mod_probit)
 ## ----probit_trafo--------------------------------------------------------
 plot(mod_probit, type = "trafo", newdata = df[1,], smooth = TRUE, 
      xlab = "Number of deer-vehicle collisions",
-     ylab = expression(paste("Transformation function ", h[Y](y))),
+     ylab = expression(paste("Transformation function ", alpha(y))),
      col = col[10], lwd = 2)
 
 ## ----sessionInfo, echo = FALSE, results = "hide"-------------------------

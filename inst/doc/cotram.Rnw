@@ -29,7 +29,9 @@ trellis.par.set(list(plot.symbol = list(col=1,pch=20, cex=0.7),
                      box.rectangle = list(col=1),
                      box.umbrella = list(lty=1, col=1),
                      strip.background = list(col = "white"), 
-                     axis.components = list(top = list(tck = 0), right = list(tck = 0))))
+                     axis.components = list(top = list(tck = 0),
+                                            right = list(tck = 0)))
+                )
 ltheme <- canonical.theme(color = FALSE)     ## in-built B&W theme
 ltheme$strip.background$col <- "transparent" ## change strip bg
 lattice.options(default.theme = ltheme)
@@ -172,17 +174,17 @@ by the general formulation of the conditional distribution function for any $\ry
 %
 \begin{eqnarray} \label{mod:trafo}
 \pYx(\ry \mid \rx) = \Prob(\rY \le \ry \mid \rx) = 
-\pZ\left(\h_\rY\left(\lfloor \ry \rfloor\right) - \rx^\top \shiftparm \right),
+\pZ\left(\h\left(\lfloor \ry \rfloor\right) - \rx^\top \shiftparm \right),
 \quad \ry \in \RR^{+}
 \end{eqnarray}
 %
-with specific models originating from the choice of the different link functions $\pZ^{-1}$. 
+with specific models originating from the choice of the different link functions $\g = \pZ^{-1}$. 
 The model class includes models with a logit, complementary log-log (cloglog),
 log-log, and probit link and thus offers interpretability of the linear predictor
 at various scales. The framework allows evaluating and interpreting the models
 in a discrete way, while using a computationally attractive, low-dimensional,
 continuous representation. The models are designed to simultaneously estimate
-the transformation function $\h_\rY$ and the regression coefficients $\shiftparm$
+the transformation function $\h$ and the regression coefficients $\shiftparm$
 optimising the exact discrete log-likelihood. Simultaneous estimation
 of the parameters \citep[developed by][]{Hothorn_Moest_Buehlmann_2017} is performed
 based on the underlying infrastructure provided by the \pkg{mlt} package \citep{pkg:mlt}.
@@ -211,9 +213,9 @@ and \cmd{logLik} are available in this framework.
 \section{Discrete Hazards Cox Count Transformation Model}\label{sec:cloglog}
 
 The count transformation model with complementary log-log link function 
-$\pZ^{-1}$ (\code{method = "cloglog"}) offers a discrete version of the Cox
+$\g = \pZ^{-1}$ (\code{method = "cloglog"}) offers a discrete version of the Cox
 proportional hazards model with fully parameterised transformation function
-$\h_\rY$ and interpretation of the linear predictor as discrete hazard ratio.
+$\h$ and interpretation of the linear predictor as discrete hazard ratio.
 The model explains the effects of the exponentiated linear predictor
 $\exp(-\rx^\top \shiftparm)$ on observed counts as multiplicative changes in discrete hazards
 $\Prob(\rY = \ry \mid \rY \ge \ry, \rx)$, comparing the conditional cumulative
@@ -282,7 +284,7 @@ can be interpreted as odds ratio
 %
 comparing the conditional odds of a configuration $\rx$ with the baseline odds
 $\nicefrac{\pY}{1 - \pY}$ (with $\rx^\top \shiftparm = 0$). The response-varying intercept 
-$\h_\rY(\ry)$ cancels out in the odds ratio, resulting in an estimate, which
+$\h(\ry)$ cancels out in the odds ratio, resulting in an estimate, which
 can be interpreted simultaneously across all cut-offs $\ry$.
 
 To explain the temporal risk of roe deer-vehicle collisions on the odds ratio scale,
@@ -339,12 +341,12 @@ distribution functions of each year between 2002 and 2011.\label{fig:logit-cdf}}
 
 \section{Discrete Reverse Time Hazards Count Transformation Model}
 
-Specifying a count transformation model with log-log link $\pZ^{-1}$ we
+Specifying a count transformation model with log-log link $\g = \pZ^{-1}$ we
 get the model formulation
 %
 \begin{eqnarray*} \label{mod:loglog}
 \pYx(\ry \mid \rx) = \Prob(\rY \le \ry \mid \rx)
-=  \exp \left(-\exp\left(\h_\rY(\lfloor \ry \rfloor) - \rx^\top \shiftparm \right)\right)
+=  \exp \left(-\exp\left(\h(\lfloor \ry \rfloor) - \rx^\top \shiftparm \right)\right)
 \end{eqnarray*}
 %
 with interpretation of the linear predictor $\exp(\rx^\top \shiftparm)$ as 
@@ -385,7 +387,7 @@ abline(v = nd$DVC)
 
 When applying a count transformation model with a probit link (\code{method = "probit"})
 we can interpret the estimated effects as changes in the conditional mean of the
-transformed counts $\Ex(\h_\rY(\ry) \mid \rX = \rx) = \rx^\top \shiftparm$. This
+transformed counts $\Ex(\h(\ry) \mid \rX = \rx) = \rx^\top \shiftparm$. This
 interpretation is the same, as obtained from fitting a normal linear regression
 model on a priori transformed counts, by \eg a log or square-root transformation.
 However, for the probit count transformation model, as implemented in the
@@ -404,16 +406,16 @@ logLik(mod_probit)
 %
 A simple tool in this framework to check, whether, for example a log transformation,
 would have been appropriate, is to inspect the estimated
-transformation function $\h_\rY(\ry)$ as illustrated in Figure~\ref{fig:probit-trafo}.
+transformation function $\h(\ry)$ as illustrated in Figure~\ref{fig:probit-trafo}.
 %
 \begin{figure}[h]
 <<probit_trafo>>=
 plot(mod_probit, type = "trafo", newdata = df[1,], smooth = TRUE, 
      xlab = "Number of deer-vehicle collisions",
-     ylab = expression(paste("Transformation function ", h[Y](y))),
+     ylab = expression(paste("Transformation function ", alpha(y))),
      col = col[10], lwd = 2)
 @
-\caption{Deer-vehicle collisions. Baseline transformation $\h_\rY$ estimated
+\caption{Deer-vehicle collisions. Baseline transformation $\h$ estimated
 by the model \code{mod\_probit} illustrated as smoothed line.\label{fig:probit-trafo}}
 \end{figure}
 %
