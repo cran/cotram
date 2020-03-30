@@ -2,11 +2,13 @@ library("cotram")
 
 set.seed(29)
 
+## 
+
 ## dgp
 dgp <- function(n = 200){
   x <- runif(n)
   yd <- as.integer(rnbinom(n, mu = exp(.5 + .8 * x), size = 10))
-  yn <- as.numeric(yd) + .Machine$double.eps^(1/4)
+  yn <- as.numeric(yd)
   yd.p1 <- yd + 1L
   data.frame(x = x, yd = yd, yn = yn, yd.p1 = yd.p1)
 }

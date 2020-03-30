@@ -11,11 +11,11 @@ logLik.cotram <- function(object, parm = coef(as.mlt(object), fixed = FALSE), ne
   response <- variable.names(object, "response")
   
   if(!missing(newdata)){
-    ## check whether response is positive integer
+    ## check whether response is non-negative integer
     if (any(newdata[response] < 0))
-      stop("response is not a positive number")
-    if(isTRUE(newdata[response]%% 1 > sqrt(.Machine$double.eps)))
-      stop("response is not an integer number")
+      stop("response is non-positive")
+    if(isTRUE(newdata[response] %% 1 == 0))
+      stop("response is non-integer")
     newdata[,response] <- as.integer(newdata[,response]) + as.integer(object$plus_one)
     return(logLik(as.mlt(object), parm = parm, newdata = newdata, ...))
   }

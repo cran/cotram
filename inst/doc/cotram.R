@@ -138,7 +138,7 @@ plot(mod_loglog, type = "density", newdata = nd, q = 0:150, col = col,
      xlab = "Number of deer-vehicle collisions", ylab = "Density function")
 abline(v = nd$DVC)
 
-## ----mod_probit----------------------------------------------------------
+## ----probit_mod----------------------------------------------------------
 mod_probit <- cotram(DVC ~ year + weekday + tvar1 + tvar2 + tvar3 +
                      tvar4 + tvar5 + tvar6 + tvar7 + tvar8 + tvar9 +
                      tvar10 + tvar11 + tvar12 + tvar13 + tvar14 +
@@ -147,12 +147,26 @@ mod_probit <- cotram(DVC ~ year + weekday + tvar1 + tvar2 + tvar3 +
 logLik(mod_probit)
 
 ## ----probit_trafo--------------------------------------------------------
+nd <- model.frame(mod_probit)[1, ]
+trafo_probit <- predict(mod_probit, type = "trafo",
+                        newdata = nd, smooth = TRUE)
+
+## ----probit_cb-----------------------------------------------------------
+cb_probit <- confband(mod_probit, type = "trafo",
+                      newdata = nd, smooth = TRUE)
+
+## ----probit_plot, echo = FALSE-------------------------------------------
+layout(matrix(1:2, nrow = 1))
 plot(mod_probit, type = "trafo", newdata = df[1,], smooth = TRUE, 
      xlab = "Number of deer-vehicle collisions",
      ylab = expression(paste("Transformation function ", alpha(y))),
-     col = col[10], lwd = 2)
+     col = col[10], lwd = 2, confidence = "band")
+plot(mod_probit, type = "distribution", newdata = df[1,], smooth = TRUE, 
+     xlab = "Number of deer-vehicle collisions",
+     ylab = "Distribution function",
+     col = col[1], lwd = 2, confidence = "band")
 
-## ----sessionInfo, echo = FALSE, results = "hide"-------------------------
+## ----sessionInfo, echo = FALSE, results = "hide"------------------------------
 sessionInfo()
 options(opt)
 

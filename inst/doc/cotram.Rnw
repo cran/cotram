@@ -157,14 +157,14 @@ df <- cbind(df, Xtime)
 
 Count transformation models are a novel model class, offering a flexible and
 data-driven approach to regressing count data. The diverse set of models in the 
-class, as proposed and discussed in \cite{Siegfried_Hothorn_2019}, are 
+class, as proposed and discussed in \cite{Siegfried_Hothorn_2020}, are 
 tailored to analyse count responses from various underlying 
 data-generating processes in a unified maximum-likelihood framework. 
 The \proglang{R} add-on package \pkg{cotram} features the implementation of the 
 proposed model class, providing a simple and user-friendly interface
 to fit and evaluate count transformation models. The package is built using the
 general infrastructure of the \proglang{R} add-on packages \pkg{tram} \citep{pkg:tram}
-and \pkg{mlt} \citep{Hothorn_2018_JSS,pkg:mlt} for likelihood-based inference and
+and \pkg{mlt} \citep{Hothorn_2020_JSS,pkg:mlt} for likelihood-based inference and
 further extensions to the implemented model specifications.
 
 Count transformation models arise from the direct modelling of the conditional
@@ -395,7 +395,7 @@ However, for the probit count transformation model, as implemented in the
 chosen, as in a least-squares approach, but estimated from data by optimising the
 exact count log-likelihood.
 %
-<<mod_probit>>=
+<<probit_mod>>=
 mod_probit <- cotram(DVC ~ year + weekday + tvar1 + tvar2 + tvar3 +
                      tvar4 + tvar5 + tvar6 + tvar7 + tvar8 + tvar9 +
                      tvar10 + tvar11 + tvar12 + tvar13 + tvar14 +
@@ -406,17 +406,39 @@ logLik(mod_probit)
 %
 A simple tool in this framework to check, whether, for example a log transformation,
 would have been appropriate, is to inspect the estimated
-transformation function $\h(\ry)$ as illustrated in Figure~\ref{fig:probit-trafo}.
+transformation function $\h(\ry)$.
+%
+<<probit_trafo>>=
+nd <- model.frame(mod_probit)[1, ]
+trafo_probit <- predict(mod_probit, type = "trafo",
+                        newdata = nd, smooth = TRUE)
+@
+%
+The variability associated with the estimated transformation functions can be further assessed by an asymptotic confidence band.
+%
+<<probit_cb>>=
+cb_probit <- confband(mod_probit, type = "trafo",
+                      newdata = nd, smooth = TRUE)
+@
+%
+The results are shown in Figure~\ref{fig:probit-trafo} for both the transformation
+function and the conditional distribution function.
 %
 \begin{figure}[h]
-<<probit_trafo>>=
+<<probit_plot, echo = FALSE>>=
+layout(matrix(1:2, nrow = 1))
 plot(mod_probit, type = "trafo", newdata = df[1,], smooth = TRUE, 
      xlab = "Number of deer-vehicle collisions",
      ylab = expression(paste("Transformation function ", alpha(y))),
-     col = col[10], lwd = 2)
+     col = col[10], lwd = 2, confidence = "band")
+plot(mod_probit, type = "distribution", newdata = df[1,], smooth = TRUE, 
+     xlab = "Number of deer-vehicle collisions",
+     ylab = "Distribution function",
+     col = col[1], lwd = 2, confidence = "band")
 @
-\caption{Deer-vehicle collisions. Baseline transformation $\h$ estimated
-by the model \code{mod\_probit} illustrated as smoothed line.\label{fig:probit-trafo}}
+\caption{Deer-vehicle collisions. Baseline transformation $\h$ and conditional
+distribution function estimated by the model \code{mod\_probit} along with 
+95\% asymptotic confidence bands.\label{fig:probit-trafo}}
 \end{figure}
 %
 
@@ -470,7 +492,5 @@ cat(x, sep = "\n", file = "packages.bib", append = FALSE)
 sessionInfo()
 options(opt)
 @
-
-\includepdf[pages=1-,nup=1]{count_transformation}
 
 \end{document}

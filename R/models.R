@@ -21,7 +21,7 @@ cotram <- function(formula, data, method = c("logit", "cloglog", "loglog", "prob
     ## check whether response is positive integer
     if (any(td$response < 0))
         stop("response is not a positive number")
-    if(isTRUE(td$response %% 1 > sqrt(.Machine$double.eps)))
+    if(!all(td$response %% 1 == 0))
         stop("response is not an integer number")
     
     ## as.integer for correct likelihood

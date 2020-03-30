@@ -1,23 +1,59 @@
+.add_confband <-function(object, smooth = FALSE, col = "black", lwd = 1, 
+                         fill = "lightgrey", border = NA) {
+    q <- object[, "q"]
+    lwr <- object[, "lwr"]
+    upr <-  object[, "upr"]
+    est <- object[, "Estimate"]
+    polyx <- c(q[1], rep(q[2:length(q)], each = 2), q[length(q)],
+               rep(rev(q)[2:length(rev(q))], each = 2))
+    polyy <-  c(rep(lwr[1:(length(lwr)-1)], each = 2), rev(upr)[1], 
+                rep(rev(upr)[2:length(rev(upr))], each = 2), lwr[1])
+    type <- "s"
+    if (smooth) {
+        polyx <- c(q, rev(q))
+        polyy <- c(lwr, rev(upr))
+        type <- "l"
+    }
+    polygon(x = polyx, y = polyy, col = fill, border = border)
+    lines(x = q, y = est, type = type, col = col, lwd = lwd)
+    if (!smooth) points(x = q, y = est, col = col, pch = 20, cex =.75)
+}
 
-plot.cotram <- function(x, newdata, smooth = FALSE,
+
+plot.cotram <- function(x, newdata,
                         type = c("distribution", "survivor", "density", "logdensity",
                                  "cumhazard", "quantile", "trafo"),
-                        q = NULL, prob = 1:(K - 1) / K, K = 50,
-                        col = rgb(.1, .1, .1, .1), lty = 1, lwd = 1, add = FALSE, ...) {
+                        confidence = c("none", "band"), level = 0.95, 
+                        smooth = FALSE, q = NULL, K = 20, cheat = K, prob = 1:(10-1)/10,
+                        col = "black", fill = "lightgrey", lty = 1, lwd = 1, add = FALSE, ...) {
     
     args <- list(...)
     y <- variable.names(x, "response")
     
-    if (is.null(q))
+    if (is.null(q)){
         q <- mkgrid(x, n = K)[[y]] - as.integer(x$plus_one)
-    if (smooth)
-        q <- seq(from = min(q), to = max(q), length.out = K)
+        if (smooth)
+            q <- seq(from = min(q), to = max(q), length.out = K)
+    }
     
     type <- match.arg(type)
-
-    pr <- predict(x, newdata = newdata, type = type, q = q, smooth = smooth) 
     
+    pr <- predict(x, newdata = newdata, type = type, q = q , smooth = smooth,
+                  prob = prob, K = K, ...) 
     pr[!is.finite(pr)] <- NA
+    
+    cb <- NULL
+    confidence <- match.arg(confidence)
+    # calpha <- switch(confidence, "none" = NULL,
+    #                  "interval" = univariate_calpha(),
+    #                  "band" = adjusted_calpha())
+    confidence <- confidence != "none"
+    
+    if (confidence)
+        cb <- confband(x, newdata = newdata, level = level,
+                       type = type, K = K, cheat = cheat, 
+                       smooth = smooth)
+    
     rpr <- range(pr, na.rm = TRUE)
     if (is.null(dim(pr))) pr <- matrix(pr, ncol = 1)
     ylim <- switch(type, "distribution" = c(0, 1),
@@ -60,8 +96,22 @@ plot.cotram <- function(x, newdata, smooth = FALSE,
         for (i in 1:ncol(pr)){
             lines(q, pr[,i], col = col[i], lty = lty[i], type = ty)
             points(q, pr[,i], col = col[i], pch = 20, cex =.75)
-            }
         }
+    }
     invisible(pr)
+    
+    if (confidence) {
+        if (length(fill) != NROW(newdata)) 
+            fill <- rep(fill, length.out = NROW(newdata))
+        if (length(col) != NROW(newdata)) 
+            col <- rep(col, length.out = NROW(newdata))
+        
+        if (is.matrix(cb)) {
+            .add_confband(cb, smooth = smooth, col = col[1], lwd = lwd[1], fill = fill[1]) 
+        } else {
+            out <- lapply(1:length(cb), function(i) 
+                .add_confband(cb[[i]], smooth = smooth, col = col[i], lwd = lwd[i], fill = fill[i]))
+        }
+    }
 }
 

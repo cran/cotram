@@ -80,12 +80,16 @@ An object of class \code{cotram} and \code{tram}, with corresponding \code{coef}
 }
 \references{
 
+  Sandra Siegfried, Torsten Hothorn (2020), Count Transformation Models,
+  \emph{Methods in Ecology and Evolution}, \doi{10.1111/2041-210X.13383}.
+  
   Torsten Hothorn, Lisa Moest, Peter Buehlmann (2018), Most Likely
   Transformations, \emph{Scandinavian Journal of Statistics}, \bold{45}(1),
   110--134, \doi{10.1111/sjos.12291}.
-
-  Sandra Siegfried, Torsten Hothorn (2019), Count Transformation Models,
-  submitted manuscript (included in the \code{cotram} package vignette).
+  
+  Torsten Hothorn (2020), Most Likely Transformations: The mlt Package, 
+  \emph{Journal of Statistical Software}, \bold{92}(1), 1--68,
+  \doi{10.18637/jss.v092.i01}.
 
 }
 \examples{
