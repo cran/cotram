@@ -2,12 +2,20 @@
 \name{NEWS}
 \title{NEWS file for the cotram package}
 
+\section{Changes in Version 0.2-1 (2021-02-23)}{
+  \itemize{
+    \item{Implement discrete hazard functions for count transformation models.}
+    \item{Exit vignette friendly when downloaded DVC data fails.}
+  }
+}
+
 \section{Changes in Version 0.2-0 (2020-03-30)}{
   \itemize{
     \item{Paper on count transformation models is now available in MEE; DOI added.}
     \item{Update vignette.}
   }
 }
+
 
 \section{Changes in Version 0.1-1 (2019-10-02)}{
   \itemize{

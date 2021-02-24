@@ -40,13 +40,26 @@ year <- substr(packageDescription("cotram")$Date, 1, 4)
 version <- packageDescription("cotram")$Version
 
 ## ----DVC-data, echo = FALSE, results = "hide", message = FALSE-----------
-# loading data
+obs <- NULL
 if (!file.exists("analysis/DVC.rda")) {
-  download.file("https://zenodo.org/record/17179/files/DVC.tgz", "DVC.tgz")
-  untar("DVC.tgz", file = "analysis/DVC.rda")
+    op <- options(timeout = 120)
+    dwnfl <- try(download.file("https://zenodo.org/record/17179/files/DVC.tgz", "DVC.tgz"))
+    options(op)
+    if (!inherits(dwnfl, "try-error")) {
+        untar("DVC.tgz", file = "analysis/DVC.rda")
+        load("analysis/DVC.rda")
+    }
+} else {
+    load("analysis/DVC.rda")
 }
-load("analysis/DVC.rda")
 
+## ----fail, results = "asis", echo = FALSE--------------------------------
+if (is.null(obs)) {
+    cat("Downloading data from zenodo failed, stop processing.", "\\end{document}\n")
+    knitr::knit_exit()
+}
+
+## ----DVC-setup, echo = FALSE, results = "hide", message = FALSE----------
 # set-ups
 loc <- Sys.setlocale("LC_ALL", "en_US.UTF-8")
 rm(loc)
