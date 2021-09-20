@@ -81,9 +81,10 @@ An object of class \code{cotram} and \code{tram}, with corresponding \code{coef}
 \references{
 
   Sandra Siegfried, Torsten Hothorn (2020), Count Transformation Models,
-  \emph{Methods in Ecology and Evolution}, \doi{10.1111/2041-210X.13383}.
+  \emph{Methods in Ecology and Evolution}, \bold{11}(7), 818--827,
+  \doi{10.1111/2041-210X.13383}.
   
-  Torsten Hothorn, Lisa Moest, Peter Buehlmann (2018), Most Likely
+  Torsten Hothorn, Lisa Möst, Peter Bühlmann (2018), Most Likely
   Transformations, \emph{Scandinavian Journal of Statistics}, \bold{45}(1),
   110--134, \doi{10.1111/sjos.12291}.
   
@@ -94,8 +95,12 @@ An object of class \code{cotram} and \code{tram}, with corresponding \code{coef}
 }
 \examples{
 
+  op <- options(digits = 4)
+
   data("birds", package = "TH.data")
   cotram(SG5 ~ AOT + AFS + GST + DBH + DWC + LOG, data = birds)
+
+  options(op)
 
 }
 \keyword{models}
