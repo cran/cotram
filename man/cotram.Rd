@@ -11,19 +11,18 @@
 }
 \usage{
 cotram(formula, data, method = c("logit", "cloglog", "loglog", "probit"),
-       log_first = TRUE, plus_one = log_first, prob = 0.9,	
-       subset, weights, offset, cluster, na.action = na.omit, ...)
+       log_first = TRUE, prob = 0.9, subset, weights, offset, cluster,
+       na.action = na.omit, ...)
 }
 \arguments{
   \item{formula}{an object of class \code{"formula"}: a symbolic description 
-          of the model structure to be
-          fitted.  The details of model specification are given under
-          \code{\link{tram}} and in the package vignette.
+        of the model structure to be fitted.  The details of model
+        specification are given under \code{\link{tram}} and in the package vignette.
   }
   \item{data}{an optional data frame, list or environment (or object
-          coercible by \code{as.data.frame} to a data frame) containing the
-          variables in the model.  If not found in \code{data}, the
-          variables are taken from \code{environment(formula)}.
+        coercible by \code{as.data.frame} to a data frame) containing the
+        variables in the model.  If not found in \code{data}, the
+        variables are taken from \code{environment(formula)}.
   }
   \item{method}{character specifying the choice of the link function,
   			mapping the transformation function into probabilities. Available choices
@@ -32,32 +31,32 @@ cotram(formula, data, method = c("logit", "cloglog", "loglog", "probit"),
   			predictor. Details of the interpretation can be found in the 
   			package vignette.
   }
-  \item{prob}{probability giving the quantile of the response defining the upper limit of the 
-  	support of a smooth Bernstein polynomial.
+  \item{prob}{probability giving the quantile of the response defining the upper
+       limit of the support of a smooth Bernstein polynomial (with the lower limit
+       being set to 0). If a vector of two probabilites is specified, the corresponding
+       quantiles of the response define the lower and upper limit of the support, 
+       respectively.
   }
   \item{log_first}{logical; if \code{TRUE}, a Bernstein polynomial is
-  			defined on the log-scale.
-  }
-  \item{plus_one}{logical; if \code{TRUE}, a Bernstein polynomial of (y + 1)
-  			is defined.
+  			defined on the log-scale for (y + 1).
   }
   \item{subset}{an optional vector specifying a subset of observations to be
-          used in the fitting process.
+        used in the fitting process.
   }
   \item{weights}{an optional vector of weights to be used in the fitting
-          process.  Should be \code{NULL} or a numeric vector. If present,
-          the weighted log-likelihood is maximised.
+        process.  Should be \code{NULL} or a numeric vector. If present,
+        the weighted log-likelihood is maximised.
   }
   \item{offset}{this can be used to specify an _a priori_ known component to
-          be included in the linear predictor during fitting.  This
-          should be \code{NULL} or a numeric vector of length equal to the
-          number of cases.
+        be included in the linear predictor during fitting.  This
+        should be \code{NULL} or a numeric vector of length equal to the
+        number of cases.
   }
   \item{cluster}{optional factor with a cluster ID employed for computing
-          clustered covariances.
+        clustered covariances.
   }
   \item{na.action}{a function which indicates what should happen when the data
-          contain \code{NA}s.  The default is set to \code{na.omit}.
+        contain \code{NA}s.  The default is set to \code{na.omit}.
   }
   \item{\dots}{additional arguments to \code{\link{tram}}.}
 }
@@ -70,7 +69,7 @@ cotram(formula, data, method = c("logit", "cloglog", "loglog", "probit"),
 	is the multiplicative change of discrete odds-ratios or hazard ratios. For 
 	the model with loglog link \code{exp(coef())} is the multiplicative change of
 	the reverse time hazard ratios. Applying a transformation model with probit link
-  \code{coef()} gives the conditional expectation of the transformed link,
+  \code{coef()} gives the conditional expectation of the transformed counts,
   with transformation function estimated from data.
 }
 \value{
@@ -95,7 +94,7 @@ An object of class \code{cotram} and \code{tram}, with corresponding \code{coef}
 }
 \examples{
 
-  op <- options(digits = 4)
+  op <- options(digits = 3)
 
   data("birds", package = "TH.data")
   cotram(SG5 ~ AOT + AFS + GST + DBH + DWC + LOG, data = birds)

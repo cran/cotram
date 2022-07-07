@@ -1,193 +1,201 @@
 
 library("cotram")
+library("survival")
 
 set.seed(25)
 
-yr <- rpois(1000, lambda = 2)
-y <- 0:10
-yy <- seq(from = min(y), to = max(y), length.out = 50)
-
-pr <- 1:9/10
-
-## cotram: log_first = FALSE
-m0 <- cotram(yr ~ 1, log_first = FALSE, extrapolate = TRUE, prob = .99)
-
-
-stopifnot(all.equal(predict(m0, newdata = data.frame(1), q = 0, type = "density"), 
-                    predict(m0, newdata = data.frame(1), q = 0, type = "distribution")))
-
-stopifnot(!isTRUE(all.equal(predict(m0, newdata = data.frame(1), q = 1, type = "density"), 
-                            predict(m0, newdata = data.frame(1), q = 1, type = "distribution"))))
-
-## cotram: log_first = TRUE
-m0_lf <- cotram(yr ~ 1, log_first = TRUE, extrapolate = TRUE, prob = .99)
-
-stopifnot(all.equal(predict(m0_lf, newdata = data.frame(1), q = 0, type = "density"), 
-                    predict(m0_lf, newdata = data.frame(1), q = 0, type = "distribution")))
-
-stopifnot(!isTRUE(all.equal(predict(m0_lf, newdata = data.frame(1), q = 1, type = "density"), 
-                            predict(m0_lf, newdata = data.frame(1), q = 1, type = "distribution"))))
-
-stopifnot(all.equal(predict(m0, newdata = data.frame(y), type = "density"), 
-                    predict(m0, newdata = data.frame(1), q = y, type = "density")))
-
-stopifnot(all.equal(predict(m0, newdata = data.frame(yr = y), type = "density"), 
-                    predict(m0, newdata = data.frame(1), q = y, type = "density")))
-
-# mt <- Colr(yr ~ 1, log_first = FALSE, extrapolate = TRUE, bounds = m0$bounds, support = m0$support)
-# predict(mt, newdata = data.frame(1), type = "quantile", prob = pr)
-# predict(mt, newdata = data.frame(1), q = y, type = "quantile", prob = pr)
-
-if (FALSE) {
-        layout(matrix(c(1:4), nrow = 2, byrow = TRUE))
-        
-        main <- "predict - density: log_first = FALSE"
-        plot(y, predict(m0, newdata = data.frame(1), q = y , type = "density"), 
-             type = "h", main = main)
-        points(y, predict(m0, newdata = data.frame(1), q = y, type = "density"), pch = 20)
-        points(y, dpois(y, lambda = 2), col = "blue")
-        lines(yy, predict(m0, newdata = data.frame(1), q = yy, type = "density", smooth = TRUE), col = "grey")
-        lines(yy, predict(m0, newdata = data.frame(1), type = "density", smooth = TRUE), 
-             col = "red")
-        plot(m0, newdata = data.frame(1), type = "density", smooth = TRUE, 
-              col = "red", add = TRUE)
-        plot(m0, newdata = data.frame(1), type = "density", 
-             col = "red", add = TRUE)
-        
-        main <- "predict - distribution: log_first = FALSE"
-        plot(y, predict(m0, newdata = data.frame(1), q = y, type = "distribution"),
-             type = "s", ylim = c(0, 1), main = main)
-        lines(yy, predict(m0, newdata = data.frame(1), q = yy, type = "distribution", smooth = TRUE), col = "grey")
-        points(y, ppois(y, lambda = 2), col = "blue")
-        points(predict(m0, newdata = data.frame(1), q = y, prob = pr, type = "quantile", 
-                       smooth = TRUE), pr, col = "darkgreen")
-        legend("bottomright", legend = c("ppois", "quantiles"), pch = 1, 
-               col = c("blue", "green"))
-        plot(m0, newdata = data.frame(1), type = "distribution", 
-             col = "red", smooth = TRUE, add = TRUE)
-        plot(m0, newdata = data.frame(1), q = y, type = "distribution", 
-             col = "red", add = TRUE)
-        
-        main <- "predict - density: log_first = TRUE"
-        plot(y, predict(m0_lf, newdata = data.frame(1), q = y, type = "density"), 
-             type = "h", main = main)
-        points(y, predict(m0_lf, newdata = data.frame(1), q = y, type = "density"), pch = 20)
-        points(y, dpois(y, lambda = 2), col = "blue")
-        lines(yy, predict(m0_lf, newdata = data.frame(1), type = "density",  q = yy, smooth = TRUE))
-        plot(m0_lf, newdata = data.frame(1), type = "density", 
-             col = "red", smooth = TRUE, add = TRUE, ylim = c(0, .3))
-        plot(m0_lf, newdata = data.frame(1), q = y, type = "density", 
-             col = "red", add = TRUE)
-        
-        main <- "predict - distribution: log_first = TRUE"
-        plot(y, predict(m0_lf, newdata = data.frame(1), q = y, type = "distribution"),
-             type = "s", ylim = c(0, 1), main = main)
-        points(y, ppois(y, lambda = 2), col = "blue")
-        lines(yy, predict(m0_lf, newdata = data.frame(1), q = yy, type = "distribution", smooth = TRUE))
-        points(predict(m0_lf, newdata = data.frame(1), 
-                       smooth = TRUE, prob = pr, type = "quantile"), pr, col = "green")
-        legend("bottomright", legend = c("ppois", "quantiles"), pch = 1, 
-               col = c("blue", "green"))
-        plot(m0_lf, newdata = data.frame(1), type = "distribution", q = 0:3,
-             col = "red", smooth = TRUE, add = TRUE)
-        plot(m0_lf, newdata = data.frame(1), type = "distribution", 
-             col = "red", add = TRUE)
-}
-
-
-## Check settings predict-function with tram
-dgp <- function(n = 200){
-        x <- runif(n)
-        y <- as.integer(rnbinom(n, mu = exp(.5 + .8 * x), size = 10))
-        y.p1 <- y + 1L
-        data.frame(x = x, y = y, y.p1 = y.p1)
-}
-df <- dgp()
-m1 <- cotram(y ~ x, data = df, method = "cloglog")
-
-m2 <- Coxph(y.p1 ~ x, data = df,
-            support = m1$support,
-            bounds = m1$bounds,
-            log_first = TRUE)
-
-q <- m1$count_response$support - 1 
-q2 <- m1$count_response$support
-
-nd <- data.frame(y = q,
-                 y.p1 = q + 1, 
-                 x = seq(0, 1, length.out = length(q)))
-
-stopifnot(all.equal(
-        predict(m1, newdata = nd), 
-        (-1) * m1$negative * predict(m2, newdata = nd)
-))
-
-stopifnot(all.equal(
-        predict(m1, newdata = nd, type = "distribution"), 
-        predict(m2, newdata = nd, type = "distribution"), 
-        check.attributes = FALSE
-))
-
-
-stopifnot(all.equal(
-        predict(m1, newdata = nd, q = q, type = "density"), 
-        predict(m2, newdata = nd, q = q2, type = "distribution") - 
-        predict(m2, newdata = nd, q = q2 - 1, type = "distribution"),
-        check.attributes = FALSE
-))
-
-nd.m1 <- data.frame(y.p1 = nd$y.p1 - 1 , x = nd$x)
-stopifnot(all.equal(
-        predict(m1, newdata = nd, type = "density"), 
-        predict(m2, newdata = nd, type = "distribution") - 
-                predict(m2, newdata = nd.m1, type = "distribution"),
-        check.attributes = FALSE
-))
-
-stopifnot(all.equal(
-        predict(m1, newdata = nd[, "x", drop = FALSE], q = q, type = "density"), 
-        predict(m2, newdata = nd[, "x", drop = FALSE], type = "distribution", q = q2) - 
-                predict(m2, newdata = nd[, "x", drop = FALSE], type = "distribution", q = q2 - 1),
-        check.attributes = FALSE
-))
-
-stopifnot(all.equal(
-        predict(m1, type = "trafo"),
-        predict(m1, newdata = df, type = "trafo")
-        ))
-
 ### some basic checks for predictions wrt discrete distributions
 n <- 50
-d <- data.frame(x1 = 1:n, x2 = sample(1:n) + 1, y = sample(1:n))
-mod <- cotram(y ~ x1 + x2, data = d)
+d <- data.frame(x1 = 0:n, x2 = sample(0:n) + 1, q = sample(0:n))
+mc3 <- cotram(q ~ x1 + x2, data = d, log_first = log_first <- FALSE)
+
+di <- d
+di$qleft <- with(di, q - 1L)
+di$qleft[di$qleft < 0] <- -Inf
+di$q <- with(di, Surv(qleft + log_first, q + log_first, type = "interval2"))
+m3 <- Colr(q ~ x1 + x2, data = di, support = mc3$support, bounds = mc3$bounds, log_first = log_first)
 
 .chk <- function(x)
-    stopifnot(max(abs(x), na.rm = TRUE) < sqrt(.Machine$double.eps))
+  stopifnot(max(abs(x), na.rm = TRUE) < sqrt(.Machine$double.eps))
 
 nd <- d
-nd$y <- NULL
+nd$q <- NULL
 q <-0:(n+1)
-p <- predict(mod, newdata = nd, q = q, type = "distribution")
-s <- predict(mod, newdata = nd, q = q, type = "survivor")
-.chk(predict(mod, newdata = nd, q = q, type = "distribution", log = TRUE) - log(p))
-.chk(predict(mod, newdata = nd, q = q, type = "distribution", lower.tail = FALSE) - s)
-.chk(predict(mod, newdata = nd, q = q, type = "distribution", 
+
+p <- predict(mc3, newdata = nd, q = q, type = "distribution")
+s <- predict(mc3, newdata = nd, q = q, type = "survivor")
+
+## check discrete distribution & survivor function
+.chk(predict(mc3, newdata = nd, q = q, type = "distribution", log = TRUE) - log(p))
+.chk(predict(mc3, newdata = nd, q = q, type = "distribution", lower.tail = FALSE) - s)
+.chk(predict(mc3, newdata = nd, q = q, type = "distribution", 
              lower.tail = FALSE, log = TRUE) - log(s))
 
-o <- predict(mod, newdata = nd, q = q, type = "odds")
+## check discrete odds function
+o <- predict(mc3, newdata = nd, q = q, type = "odds")
 .chk(o - p / s)
 
-dd <- predict(mod, newdata = nd, q = q, type = "density")
-
+## check discrete density function
+dd <- predict(mc3, newdata = nd, q = q, type = "density")
 .chk(apply(p, 2, function(x) diff(c(0, x))) - dd)
 
-h <- predict(mod, newdata = nd, q = q, type = "hazard")
+## check discrete (cum)-hazard function
+h <- predict(mc3, newdata = nd, q = q , type = "hazard")
 
 .chk(dd / (1 - (p - dd)) - h)
 
 .chk(apply(h, 2, function(x) cumprod(1 - x)) - s)
 
-H <- predict(mod, newdata = nd, q = q, type = "cumhazard")
+H <- predict(mc3, newdata = nd, q = q, type = "cumhazard")
 
 .chk(H + log(s))
+
+
+## simple checks for predict of smooth functions (cotram vs tram)
+.check_spr <- function(mc, m) {
+  plus_one <- ifelse(type == "quantile", log_first, FALSE)
+  .chk(predict(mc, type = type, q = 1:50, newdata = model.frame(mc), smooth = TRUE, prob = 1:9/10) -
+         (predict(m, type = type, q = 1:50 + log_first, newdata = model.frame(mc), prob = 1:9/10) - plus_one))
+}
+
+for (type in c("trafo", "distribution", "survivor", "density", "logdensity",
+               "hazard", "loghazard", "cumhazard", "quantile")) {
+  print(type)
+.check_spr(mc3, m3)
+}
+  
+### unconditional model for visual checks
+y <- rpois(1000, lambda = 2)
+
+## interval-censored response
+yleft <- y - 1L
+yleft[yleft < 0] <- -Inf
+
+## quantiles & probabilities
+q <- 0:10
+yy <- seq(from = min(q), to = max(q), length.out = 50)
+pr <- 1:9/10
+
+## simple checks for predict wrt to newdata / q (log_first)
+.check_prd <- function(mc) {
+  ## check q
+  stopifnot(all.equal(predict(mc, newdata = data.frame(q), type = "density"), 
+                      predict(mc, newdata = data.frame(1), q = q, type = "density")))
+  
+  ## check q[1] density vs distribution
+  stopifnot(all.equal(predict(mc, newdata = data.frame(1), q = 0, type = "density"),
+                      predict(mc, newdata = data.frame(1), q = 0, type = "distribution")))
+  
+  ## rough check discrete density function
+  stopifnot(all.equal(predict(mc, newdata = data.frame(1), q = q, type = "density"), 
+                      predict(mc, newdata = data.frame(1), q = q, type = "distribution") - 
+                        c(0, predict(mc, newdata = data.frame(1), q = q[-1] - 1 , type = "distribution"))))
+  
+  stopifnot(all.equal(predict(mc, newdata = data.frame(y = q), type = "density"), 
+                      predict(mc, newdata = data.frame(y = q), type = "distribution") - 
+                        c(0, predict(mc, newdata = data.frame(y = q[-1] - 1), type = "distribution"))))
+  
+}
+
+## cotram: log_first = FALSE
+mc1 <- cotram(y ~ 1, log_first = FALSE, prob = prob <- .99, extrapolate = TRUE)
+
+.check_prd(mc1)
+
+m1 <- Colr(yi ~ 1, data = data.frame(yi = Surv(yleft, y, type = "interval2")), extrapolate = TRUE,
+            log_first = FALSE, support = c(0, quantile(y, prob = prob)), bounds = c(-.01, Inf))
+
+## <FIXME> quantiles with q
+# m1p <- Colr(y ~ 1, extrapolate = TRUE,
+#            log_first = FALSE, support = c(0, quantile(y, prob = prob)), bounds = c(-.01, Inf))
+# 
+# predict(m1p, type = "quantile", prob = pr, newdata = model.frame(y = y))
+# predict(mc1, type = "quantile", prob = pr, smooth = TRUE, newdata = model.frame(y = y))
+## <\FIXME>
+
+## cotram: log_first = TRUE
+mc2 <- cotram(y ~ 1, log_first = TRUE, extrapolate = TRUE, prob = .99)
+
+.check_prd(mc2)
+
+if (FALSE) {
+layout(matrix(c(1:4), nrow = 2, byrow = TRUE))
+
+main <- "predict - density: log_first = FALSE"
+plot(q, predict(mc1, newdata = data.frame(1), q = q , type = "density"),
+     type = "h", main = main)
+points(q, predict(mc1, newdata = data.frame(1), q = q, type = "density"), pch = 20)
+points(q, dpois(q, lambda = 2), col = "blue")
+lines(yy, predict(mc1, newdata = data.frame(1), q = yy, type = "density", smooth = TRUE), col = "grey")
+lines(yy, predict(mc1, newdata = data.frame(y = yy), type = "density", smooth = TRUE),
+      col = "red")
+plot(mc1, newdata = data.frame(1), type = "density", smooth = TRUE,
+     col = "red", add = TRUE)
+plot(mc1, newdata = data.frame(1), type = "density",
+     col = "red", add = TRUE)
+
+main <- "predict - distribution: log_first = FALSE"
+plot(q, predict(mc1, newdata = data.frame(1), q = q, type = "distribution"),
+     type = "s", ylim = c(0, 1), main = main)
+lines(yy, predict(mc1, newdata = data.frame(1), q = yy, type = "distribution", smooth = TRUE), col = "grey")
+points(q, ppois(q, lambda = 2), col = "blue")
+points(predict(mc1, newdata = data.frame(1), q = q, prob = pr, type = "quantile",
+               smooth = TRUE), pr, col = "darkgreen")
+legend("bottomright", legend = c("ppois", "quantiles"), pch = 1,
+       col = c("blue", "green"))
+plot(mc1, newdata = data.frame(1), type = "distribution",
+     col = "red", smooth = TRUE, add = TRUE)
+plot(mc1, newdata = data.frame(1), q = q, type = "distribution",
+     col = "red", add = TRUE)
+
+main <- "predict - density: log_first = TRUE"
+plot(q, predict(mc2, newdata = data.frame(1), q = q, type = "density"),
+     type = "h", main = main)
+points(q, predict(mc2, newdata = data.frame(1), q = q, type = "density"), pch = 20)
+points(q, dpois(q, lambda = 2), col = "blue")
+lines(yy, predict(mc2, newdata = data.frame(1), type = "density",  q = yy, smooth = TRUE))
+plot(mc2, newdata = data.frame(1), type = "density",
+     col = "red", smooth = TRUE, add = TRUE, ylim = c(0, .3))
+plot(mc2, newdata = data.frame(1), q = q, type = "density",
+     col = "red", add = TRUE)
+
+main <- "predict - distribution: log_first = TRUE"
+plot(q, predict(mc2, newdata = data.frame(1), q = q, type = "distribution"),
+     type = "s", ylim = c(0, 1), main = main)
+points(q, ppois(q, lambda = 2), col = "blue")
+lines(yy, predict(mc2, newdata = data.frame(1), q = yy, type = "distribution", smooth = TRUE))
+points(predict(mc2, newdata = data.frame(1),
+               smooth = TRUE, prob = pr, type = "quantile"), pr, col = "green")
+legend("bottomright", legend = c("ppois", "quantiles"), pch = 1,
+       col = c("blue", "green"))
+plot(mc2, newdata = data.frame(1), type = "distribution", q = 0:3,
+     col = "red", smooth = TRUE, add = TRUE)
+plot(mc2, newdata = data.frame(1), type = "distribution",
+     col = "red", add = TRUE)
+
+layout(matrix(c(1:6), nrow = 2, byrow = TRUE))
+plot(mc3, newdata = nd,  type = "density", col = rgb(.3, .3, .3, .3))
+# plot(m3, newdata = nd, type = "density", col = 2, add = TRUE)
+abline(v = 0)
+
+plot(mc3, newdata = nd,  type = "logdensity", ylim = c(-6, 0), col = rgb(.3, .3, .3, .3))
+# plot(m3, newdata = nd, type = "logdensity", col = 2, add = TRUE, ylim = c(-6, 0))
+abline(v = 0)
+
+plot(mc3, newdata = nd, type = "distribution", col = rgb(.3, .3, .3, .3))
+# plot(m3, newdata = nd, type = "distribution", col = 2, add = TRUE)
+abline(v = 0)
+
+plot(mc3, newdata = nd, type = "trafo", col = rgb(.3, .3, .3, .3))
+# plot(m3, newdata = nd, type = "trafo", col = 2, add = TRUE)   
+abline(v = 0)
+
+plot(mc3, newdata = nd, type = "survivor", col = rgb(.3, .3, .3, .3))
+# plot(m3, newdata = nd, type = "survivor", col = 2, add = TRUE)   
+abline(v = 0)
+
+plot(mc3, newdata = nd, type = "cumhazard", col = rgb(.3, .3, .3, .3))
+# plot(m3, newdata = nd, type = "cumhazard", col = 2, add = TRUE)   
+abline(v = 0)
+}
 

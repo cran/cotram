@@ -7,7 +7,7 @@ confband.cotram <- function(object, newdata,  level = 0.95,
     type <- match.arg(type)
     if (nrow(newdata) > 1) {
         ret <- lapply(1:nrow(newdata), function(i)
-            confband(object = object, newdata = newdata[i,,drop = FALSE], q = q,
+            confband(object = object, newdata = newdata[i,, drop = FALSE], q = q,
                      level = level, type = type, K = K, cheat = K, ...))
         return(ret)
     }
@@ -15,13 +15,15 @@ confband.cotram <- function(object, newdata,  level = 0.95,
     
     y <- variable.names(object, "response")
     
+    ## (q + 1) for log_first = TRUE
+    plus_one <- as.integer(object$log_first)
+    
     if (!is.null(q)) {
         if (any(q < 0)) stop("q is non-positive")
         if (!smooth && !all(q %% 1 == 0)) stop("q is non-integer")
-        q <- q + as.integer(object$plus_one) 
-        ## <FIXME> What to do, when lenght(q) > 20? <\FIXME> 
+        q <- q + plus_one
     } else {
-        q <- mkgrid(object, n = K)[[y]]
+        q <- mkgrid(object, n = K)[[y]] + plus_one
         
         if (smooth)
             q <- seq(from = min(q), to = max(q), length.out = K)
@@ -37,7 +39,7 @@ confband.cotram <- function(object, newdata,  level = 0.95,
     
     X <- model.matrix(object$model$model, data = nd)
     
-    ci <- confint(multcomp::glht(multcomp::parm(coef(as.mlt(object)), mlt:::vcov.mlt(as.mlt(object))),
+    ci <- confint(multcomp::glht(multcomp::parm(coef(as.mlt(object)), vcov(as.mlt(object))),
                                  linfct = X), ...)$confint
     
     ## use quantile obtained for K contrasts for larger number of contrasts
@@ -49,6 +51,6 @@ confband.cotram <- function(object, newdata,  level = 0.95,
     if (type == "survivor") ci <- 1 - object$model$todistr$p(ci)
     if (type == "cumhazard") ci <- -log(1 - object$model$todistr$p(ci))
     
-    ci <- cbind(q = q - as.integer(object$plus_one) , ci)
+    ci <- cbind(q = q - plus_one, ci)
     return(ci)
 }

@@ -1,55 +1,101 @@
+## check links
+
 library("cotram")
+library("survival")
 
 set.seed(29)
 
-## 
+### check coefficients (tram vs cotram model)
+.check_cf <- function(m, mc) {
 
-## dgp
-dgp <- function(n = 200){
-  x <- runif(n)
-  yd <- as.integer(rnbinom(n, mu = exp(.5 + .8 * x), size = 10))
-  yn <- as.numeric(yd)
-  yd.p1 <- yd + 1L
-  data.frame(x = x, yd = yd, yn = yn, yd.p1 = yd.p1)
+  cfc <- coef(as.mlt(mc))
+  
+  ## tram coefs for negative = TRUE
+  cf <- coef(c <- as.mlt(m))
+  cf[c$shiftcoef] <- c(-1, 1)[(m$negative & mc$negative) + 1] * cf[c$shiftcoef]
+  
+  ## check tram vs cotram coefs
+  stopifnot(all.equal(cf, cfc, check.attributes = FALSE))
+  
+  # print(paste("coefficients all equal for tram & cotram, for log_first = ", mc$log_first, " and ", 
+  #             mc$model$todistr$name, " inv. link.", sep = "'"))
 }
 
-df <- dgp()
-trainID <- sample(1:nrow(df), size = 0.25 * nrow(df))
-df.train <- df[trainID,]
-df.test <- df[-trainID,]
 
-## test model
-m1d <- cotram(yd ~ x, data = df.train, method = "cloglog")
+### check log-likelihood (tram vs cotram model)
+.check_ll <- function(m, mc) {
 
-m1n <- cotram(yn ~ x, data = df.train, method = "cloglog")
+  ## simple check wrt to newdata
+  stopifnot(logLik(mc) == logLik(mc, newdata = model.frame(mc)))
+  
+  ## likelihood contributions interval-censored
+  L <- predict(m, newdata = data.frame(yi = d$y + as.integer(log_first), x = d$x), type = "distribution") -
+    predict(m, newdata = data.frame(yi = d$y + as.integer(log_first) - 1L, x = d$x), type = "distribution")
+  
+  ## check interval-censored vs cotram log-likelihoods
+  stopifnot(all.equal(log(L), mc$logliki(coef(as.mlt(mc)), mc$weights), check.attributes = FALSE))
+  
+  ## check tram vs cotram log-likelihoods
+  stopifnot(all.equal(m$logliki(coef(as.mlt(m)), m$weight), mc$logliki(coef(as.mlt(mc)), mc$weight)))
+  
+  # print(paste("log-likelihoods all equal for tram & cotram, for log_first = ", mc$log_first, " and ", 
+  #             mc$model$todistr$name, " inv. link.", sep = "'"))
+}
 
-m3d <- cotram(yd ~ x , data = df.train,
-              log_first = FALSE, method = "cloglog")
 
-m2 <- Coxph(yd.p1 ~ x, data = df.train,
-             support = m1d$support,
-             bounds = m1d$bounds,
-             log_first = TRUE)
+### run checks for log_first = FALSE / TRUE & all links
+## dgp counts
+n <- 200
+x <- runif(n)
+y <- as.integer(rnbinom(n, mu = exp(.5 + .8 * x), size = 10))
 
-# compare coefficients
-cf1n <- coef(as.mlt(m1n))
-cf1d <- coef(as.mlt(m1d))
-stopifnot(all.equal(cf1n, cf1d, check.attributes = FALSE))
+## trams & cotrams
+links <- c("logit", "cloglog", "loglog", "probit")
+trams <- c("logit" = "Colr", "cloglog" = "Coxph", "loglog" = "Lehmann", "probit" = "BoxCox")
 
-c2 <- as.mlt(m2)
-cf2 <- coef(c2)
-cf2[c2$shiftcoef] <- -cf2[c2$shiftcoef]
-stopifnot(all.equal(cf1n, cf2, check.attributes = FALSE))
+## run
+for (log_first in c(FALSE, TRUE)) {
+  
+  # print(log_first)
+  
+  ## plus_one for log_first = TRUE
+  plus_one <- as.integer(log_first)
+  
+  ## counts as interval censored object
+  yleft <- y - 1L
+  yleft[yleft < 0] <- -Inf
+  yi <- Surv(yleft + plus_one, y + plus_one, type = "interval2")
+  
+  d <- data.frame(y = y, yi = yi, x = x)
+  
+  for (link in links) {
+    # print(link)
+    mc <- cotram(as.formula(y ~ x), data = d, method = link, log_first = log_first)
+    # print(mc)
+    
+    ## check model.frame
+    stopifnot(all.equal(nd <- model.frame(mc), d[names(nd)], check.attributes = FALSE))
+    
+    tram <- unname(trams[link])
+    m <- do.call(tram, list(formula = yi ~ x, support = mc$support, bounds = mc$bounds, log_first = log_first))
+    # print(m)
+    
+    ## check if same model
+    stopifnot(mc$model$todistr$name == m$model$todistr$name)
+    
+    .check_cf(m, mc)
+    .check_ll(m, mc)
+  }
+}
 
-# compare likelihoods
-l1d <- m1d$logliki(coef(as.mlt(m1d)), rep(1, length(df.train$yd)))
-l1n <- m1d$logliki(coef(as.mlt(m1n)), rep(1, length(df.train$yn)))
-stopifnot(all.equal(l1d, l1n))
 
-l2 <- m2$logliki(coef(as.mlt(m2)), rep(1, length(df.train$yd.p1)))
-stopifnot(all.equal(l1d, l2))
+## additional checks for plus_one
+d0 <- data.frame(y = q <- 0L:100L, x = runif(length(q)))
 
-# logLik for newdata
-stopifnot(isTRUE(logLik(m1d) == logLik(m1d, newdata = df.train)))
-stopifnot(isTRUE(logLik(m1d, newdata = df.test) == logLik(m2, newdata = df.test)))
-stopifnot(isTRUE(logLik(m1d, newdata = df.test) == logLik(m1n, newdata = df.test)))
+m0 <- cotram(y ~ x, log_first = TRUE, data = d0)
+
+stopifnot(all(mkgrid(m0)$y == q)) ## mkgrid  for log_first
+
+m0 <- cotram(y ~ x, log_first = FALSE, data = d0)
+
+stopifnot(all(mkgrid(m0)$y == q)) ## mkgrid 

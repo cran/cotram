@@ -94,7 +94,7 @@ mod_cloglog <- cotram(DVC ~ year + weekday + tvar1 + tvar2 + tvar3 +
                       tvar4 + tvar5 + tvar6 + tvar7 + tvar8 + tvar9 + 
                       tvar10 + tvar11 + tvar12 + tvar13 + tvar14 + 
                       tvar15 + tvar16 + tvar17 + tvar18 + tvar19 + tvar20,
-                      data = df, method = "cloglog")
+                      data = df, method = "cloglog", prob = c(0, .9))
 logLik(mod_cloglog)
 
 ## ----nd_day--------------------------------------------------------------
@@ -113,7 +113,7 @@ mod_logit <- cotram(DVC ~ year + weekday + tvar1 + tvar2 + tvar3 +
                     tvar4 + tvar5 + tvar6 + tvar7 + tvar8 + tvar9 +
                     tvar10 + tvar11 + tvar12 + tvar13 + tvar14 +
                     tvar15 + tvar16 + tvar17 + tvar18 + tvar19 + tvar20,
-                    data = df, method = "logit")
+                    data = df, method = "logit", prob = c(0, .9))
 logLik(mod_logit)
 
 ## ----coefs_logit---------------------------------------------------------
@@ -140,7 +140,7 @@ mod_loglog <- cotram(DVC ~ year + weekday + tvar1 + tvar2 + tvar3 +
                      tvar4 + tvar5 + tvar6 + tvar7 + tvar8 + tvar9 +
                      tvar10 + tvar11 + tvar12 + tvar13 + tvar14 +
                      tvar15 + tvar16 + tvar17 + tvar18 + tvar19 + tvar20,
-                     data = df, method = "loglog")
+                     data = df, method = "loglog", prob = c(0, .9))
 logLik(mod_loglog)
 
 ## ----nd_density----------------------------------------------------------
@@ -156,7 +156,7 @@ mod_probit <- cotram(DVC ~ year + weekday + tvar1 + tvar2 + tvar3 +
                      tvar4 + tvar5 + tvar6 + tvar7 + tvar8 + tvar9 +
                      tvar10 + tvar11 + tvar12 + tvar13 + tvar14 +
                      tvar15 + tvar16 + tvar17 + tvar18 + tvar19 + tvar20,
-                     data = df, method = "probit")
+                     data = df, method = "probit", prob = c(0, .9))
 logLik(mod_probit)
 
 ## ----probit_trafo--------------------------------------------------------

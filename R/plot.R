@@ -6,8 +6,8 @@
     est <- object[, "Estimate"]
     polyx <- c(q[1], rep(q[2:length(q)], each = 2), q[length(q)],
                rep(rev(q)[2:length(rev(q))], each = 2))
-    polyy <-  c(rep(lwr[1:(length(lwr)-1)], each = 2), rev(upr)[1], 
-                rep(rev(upr)[2:length(rev(upr))], each = 2), lwr[1])
+    polyy <- c(rep(lwr[1:(length(lwr)-1)], each = 2), rev(upr)[1], 
+               rep(rev(upr)[2:length(rev(upr))], each = 2), lwr[1])
     type <- "s"
     if (smooth) {
         polyx <- c(q, rev(q))
@@ -26,12 +26,14 @@ plot.cotram <- function(x, newdata,
                         confidence = c("none", "band"), level = 0.95, 
                         smooth = FALSE, q = NULL, K = 20, cheat = K, prob = 1:(10-1)/10,
                         col = "black", fill = "lightgrey", lty = 1, lwd = 1, add = FALSE, ...) {
-    
+    ## <FIXME> line-type for logdensity <\FIXME>
+    ## <FIXME> allow to plot hazard and loghazard <\FIXME>
+  
     args <- list(...)
     y <- variable.names(x, "response")
     
     if (is.null(q)){
-        q <- mkgrid(x, n = K)[[y]] - as.integer(x$plus_one)
+        q <- mkgrid(x, n = K)[[y]]
         if (smooth)
             q <- seq(from = min(q), to = max(q), length.out = K)
     }
@@ -98,7 +100,6 @@ plot.cotram <- function(x, newdata,
             points(q, pr[,i], col = col[i], pch = 20, cex =.75)
         }
     }
-    invisible(pr)
     
     if (confidence) {
         if (length(fill) != NROW(newdata)) 
@@ -113,5 +114,6 @@ plot.cotram <- function(x, newdata,
                 .add_confband(cb[[i]], smooth = smooth, col = col[i], lwd = lwd[i], fill = fill[i]))
         }
     }
+  invisible(pr)
 }
 

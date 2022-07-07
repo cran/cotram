@@ -1,7 +1,7 @@
 
 cotram <- function(formula, data, method = c("logit", "cloglog", "loglog", "probit"),
-                   log_first = TRUE, plus_one = log_first, prob = 0.9,
-                   subset, weights, offset, cluster, na.action = na.omit, ...)
+                   log_first = TRUE, prob = 0.9, subset, weights, offset, cluster,
+                   na.action = na.omit, ...)
 {
     mf <- match.call(expand.dots = FALSE)
     m <- match(c("formula", "data", "subset", "na.action", "weights", "offset", "cluster"), names(mf), 0L)
@@ -18,23 +18,25 @@ cotram <- function(formula, data, method = c("logit", "cloglog", "loglog", "prob
     
     stopifnot(inherits(td$response, "response") || is.numeric(td$response))
     
-    ## check whether response is positive integer
-    if (any(td$response < 0))
-        stop("response is not a positive number")
-    if(!all(td$response %% 1 == 0))
-        stop("response is not an integer number")
+    ## check that response is positive integer
+    if (any(td$response < 0)) stop("response is non-positive")
+    if (!all(td$response %% 1 == 0)) stop("response is non-integer")
     
-    ## as.integer for correct likelihood
-    td$response <- as.integer(td$response)
-    td$mf[,td$rname] <- as.integer(td$mf[,td$rname])
+    y <- as.integer(td$response)
     
     ## y + 1 for log_first
-    td$response <- td$response + as.integer(plus_one)
-    td$mf[,td$rname] <- td$mf[,td$rname] + as.integer(plus_one)
+    stopifnot(is.logical(log_first))
+    plus_one <- as.integer(log_first)
     
-    # support & bounds
-    support <- c(-.5 + as.integer(log_first), quantile(td$response, probs = prob))
-    bounds <- c(-.9 + as.integer(log_first), Inf)
+    ## interval-censored count response for correct likelihood
+    td$response <- .count_var(td$response, plus_one = plus_one)
+    td$mf[, td$rname] <- .count_var(td$mf[, td$rname], plus_one = plus_one)
+    
+    ## support
+    support <- c(0, round(quantile(y, probs = prob)))[0:1 + length(prob)] + plus_one
+    
+    ## bounds
+    bounds <- c(-0.01, Inf) + plus_one
     
     ret <- tram(td, transformation = "smooth", distribution = distribution, 
                 log_first = log_first, support = support, bounds = bounds, 
@@ -42,7 +44,7 @@ cotram <- function(formula, data, method = c("logit", "cloglog", "loglog", "prob
     if (!inherits(ret, "mlt")) return(ret)
     
     ret$call <- match.call(expand.dots = TRUE)
-    ret$plus_one <- plus_one
+    ret$log_first <- log_first
     ret$support <- support
     ret$bounds <- bounds
     if (method != "probit") {
@@ -52,8 +54,10 @@ cotram <- function(formula, data, method = c("logit", "cloglog", "loglog", "prob
         ret$tram <- paste(ifelse(is.null(td$terms$s), "", "(Stratified)"),
                           "Transformed Counts Probit Transformation Model")
     }
-    ret$data[, td$rname] <- ret$data[, td$rname] - as.integer(plus_one)
-    ret$count_response <- numeric_var(td$rname, support = min(td$response):max(td$response))
+    
+    ## <FIXME> return Surv object or count response? <\FIXME>
+    ret$data[, td$rname] <- y
+    ret$count_response <- numeric_var(td$rname, support = min(y):max(y))
     class(ret) <- c("cotram", class(ret))
     ret
 }
