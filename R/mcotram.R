@@ -1,3 +1,5 @@
+
+
 ### mmlt function for count case
 mcotram <- function(..., formula = ~ 1, data, theta = NULL, # diag = FALSE,
                     control.outer = list(trace = FALSE), # scale = FALSE,
@@ -29,8 +31,10 @@ mcotram <- function(..., formula = ~ 1, data, theta = NULL, # diag = FALSE,
   w <- unique(do.call("c", lapply(m, weights)))
   stopifnot(isTRUE(all.equal(w, 1)))
   
+  link <- sapply(m, function(x) x$todistr$name == "normal")
+
   ### warning for todistr != "normal"
-  if (any(sapply(m, function(x) x$todistr$name != "normal")))
+  if (any(!link))
     warning("One of the models has a non-normal inverse link function F_Z. ML
               optimization still works but no interpretation in the
               Gaussian copula framework is possible, though the lambdas still serve
@@ -432,26 +436,53 @@ mcotram <- function(..., formula = ~ 1, data, theta = NULL, # diag = FALSE,
   gaussian <- all.equal("normal", unique(sapply(mmod, function(x) x$todistr$name)))
   
   nm <- abbreviate(sapply(m, function(x) x$model$response), 4)
-  
-  lnm <- matrix(paste0(matrix(nm, nrow = J, ncol = J), ".",
-                       matrix(nm, nrow = J, ncol = J, byrow = TRUE)), nrow = J)
-  cnm <- paste0(rep(lnm[lower.tri(lnm, diag = diag)], each = nclX), ".", 
-                rep(colnames(lX), Jp))
-  
-  names(opt$par) <- c(paste0(nm[sf], ".", do.call("c", lapply(mlist, names))), cnm)
-  
+
+  if (compareVersion("0.7-2", as.character(packageVersion("tram"))) < 0) {
+    tmp <- ltmatrices(cpar, byrow = TRUE, diag = FALSE, names = nm)
+    args <- expand.grid(colnames(lX), colnames(unclass(tmp)))[,2:1]
+    colnames(cpar) <- colnames(unclass(tmp))
+    rownames(cpar) <- colnames(lX)
+    args$sep <- "."
+    names(opt$par) <- c(sapply(1:J, function(j) 
+                               paste(nm[j], names(coef(mmod[[j]])), sep = ".")),
+                        do.call("paste", args))
+  } else {
+    ltmatrices <- function(x) x
+    lnm <- matrix(paste0(matrix(nm, nrow = J, ncol = J), ".",
+                         matrix(nm, nrow = J, ncol = J, byrow = TRUE)), nrow = J)
+    cnm <- paste0(rep(lnm[lower.tri(lnm, diag = diag)], each = nclX), ".", 
+                  rep(colnames(lX), Jp))
+    names(opt$par) <- c(paste0(nm[sf], ".", do.call("c", lapply(mlist, names))), cnm)
+  }
+
   ret <- list(marginals = mmod, formula = formula, bx = bx, data = data,
-              call = call,
+              call = call, link = link, conditional = all(link), ### <- check this
               gaussian = gaussian, diag = diag,
               pars = list(mpar = mpar, cpar = cpar),
               par = opt$par, ll = ll, sc = sc, logLik = -opt$value,
-              hessian = opt$hessian)
+              hessian = opt$hessian, names = nm)
   class(ret) <- c("mcotram", "mmlt")
   ret
 }
 
 predict.mcotram <- function(object, newdata = object$data, marginal = 1L,
                             type = c("trafo", "distribution", "density"), ...) {
+
+  if (compareVersion("0.7-2", as.character(packageVersion("tram"))) < 0) {
+    type <- match.arg(type)
+    if (type == "density") stop("type = density currently not implemented")
+    ### note: implement multivariate density with leftdata argument in
+    ### predict.mmlt
+
+    class(object) <- "mmlt"
+
+    stopifnot(length(marginal) == 1L)
+
+    for (i in 1:length(object$marginals)) 
+      class(object$marginals[[i]]) <- c("cotram", class(object$marginals[[i]]))
+
+    return(predict(object = object, newdata = newdata, margins = marginal, type = type, ...))
+} else {
   type <- match.arg(type)
   if (!object$gaussian & marginal != 1L)
     stop("Cannot compute marginal distribution from non-gaussian joint model")
@@ -483,70 +514,6 @@ predict.mcotram <- function(object, newdata = object$data, marginal = 1L,
     })
   }
   if (length(ret) == 1) return(ret[[1]])
-  ret
+  return(ret)
 }
-
-
-# coef.mmlt <- function(object, newdata = object$data, 
-#                       type = c("all", "marginal", "Lambda", "Lambdainv", "Sigma", "Corr"), 
-#                       ...)
-# {
-#   
-#   type <- match.arg(type)
-#   if (type == "all") return(object$par)
-#   if (type == "marginal") return(lapply(object$marginals, coef))
-#   
-#   X <- model.matrix(object$bx, data = newdata)
-#   ret <- X %*% object$pars$cpar
-#   
-#   if (!object$gaussian & type != "Lambda")
-#     warning("return value of Lambda() has no direct interpretation")
-#   
-#   return(switch(type, "Lambda" = ret,
-#                 "Lambdainv" = .Solve2(ret),
-#                 "Sigma" = .Crossp(.Solve2(ret)),
-#                 "Corr" = {
-#                   ret <- .Crossp(.Solve2(ret))
-#                   isd <- sqrt(ret$diagonal)
-#                   if (!is.matrix(isd)) isd <- matrix(isd, nrow = 1)
-#                   SS <- c()
-#                   J <- length(object$marginals)
-#                   for (j in 1:J)
-#                     SS <- cbind(SS, isd[,j] * isd[,-(1:j), drop = FALSE])
-#                   ret$lower / SS
-#                 }))
-# }
-# 
-# summary.mmlt <- function(object, ...) {
-#   ret <- list(call = object$call,
-#               #                tram = object$tram,
-#               test = cftest(object, parm = names(coef(object, with_baseline = FALSE))),
-#               ll = logLik(object))
-#   class(ret) <- "summary.mmlt"
-#   ret
-# }
-# 
-# print.summary.mmlt <- function(x, digits = max(3L, getOption("digits") - 3L), ...) {
-#   cat("\n", "Multivariate conditional transformation model", "\n")
-#   cat("\nCall:\n")
-#   print(x$call)
-#   cat("\nCoefficients:\n")
-#   pq <- x$test$test
-#   mtests <- cbind(pq$coefficients, pq$sigma, pq$tstat, pq$pvalues)
-#   colnames(mtests) <- c("Estimate", "Std. Error", "z value", "Pr(>|z|)")
-#   sig <- .Machine$double.eps
-#   printCoefmat(mtests, digits = digits, has.Pvalue = TRUE, 
-#                P.values = TRUE, eps.Pvalue = sig)
-#   cat("\nLog-Likelihood:\n ", x$ll, " (df = ", attr(x$ll, "df"), ")", sep = "")
-#   cat("\n\n")
-#   invisible(x)
-# }
-# 
-# print.mmlt <- function(x, ...) {
-#   cat("\n", "Multivariate count conditional transformation model", "\n")
-#   cat("\nCall:\n")
-#   print(x$call)
-#   cat("\nCoefficients:\n")
-#   print(coef(x))
-#   invisible(x)
-# }
+}

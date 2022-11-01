@@ -10802,14 +10802,15 @@ pchisq(lr, df = df, lower.tail = FALSE)
 
 #### MCOTRAM - HMSC comparison ####
 ## Sigma for M-Lambda
+# Sd <- as.array(coef(m_disc3_const, newdata = aquabirds[1, ], type = "Sigma"))[,,1]
 Sd <- coef(m_disc3_const, newdata = aquabirds[1, ], type = "Sigma")
 
-tmp <- diag(Sd$diagonal)
-tmp[lower.tri(tmp)] <- Sd$lower
-Sd <- tmp + t(tmp)
-diag(Sd) <- diag(Sd) / 2
-Sd
-cov2cor(Sd)
+#tmp <- diag(Sd$diagonal)
+#tmp[lower.tri(tmp)] <- Sd$lower
+#Sd <- tmp + t(tmp)
+#diag(Sd) <- diag(Sd) / 2
+#Sd
+#cov2cor(Sd)
 coef(m_disc3_const, newdata = aquabirds[1, ], type = "Cor")
 
 ## Coefs for M-Lambda(x)
@@ -10839,7 +10840,7 @@ idx_bird <- c("Haubentaucher", "Kormoran", "Saeger")
 ############# CONSTANT LAMBDAS ############# 
 ## mcotram
 time_mcotram_const <- system.time(
-  if (TRUE) {
+  if (FALSE) {
     
     set.seed(270161)
     for (i in 1:Nrepeat) {
@@ -10890,7 +10891,7 @@ time_mcotram_const <- system.time(
 )
 ## Hmsc
 time_hmsc_const <- system.time(
-  if(TRUE) {  
+  if (FALSE) {  
     set.seed(270161)
     for (i in 1:Nrepeat) {
       
@@ -10944,7 +10945,7 @@ time_hmsc_const <- system.time(
 
 ## mcotram
 time_mcotram_var <- system.time(
-  if (TRUE) {
+  if (FALSE) {
     set.seed(270161)
     for (i in 1:Nrepeat) {
       # Ud <- pnorm(rmvnorm(n = nrow(aquabirds) * Nsim, sigma = cov2cor(Sd)))
