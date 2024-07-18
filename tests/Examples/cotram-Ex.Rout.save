@@ -1,7 +1,7 @@
 
-R version 4.3.0 (2023-04-21) -- "Already Tomorrow"
-Copyright (C) 2023 The R Foundation for Statistical Computing
-Platform: x86_64-pc-linux-gnu (64-bit)
+R version 4.4.1 (2024-06-14) -- "Race for Your Life"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
@@ -49,6 +49,7 @@ Loading required package: mvtnorm
 >   ### fit count transformation model with cloglog link
 >   m_birds <- cotram(SG5 ~ AOT + AFS + GST + DBH + DWC + LOG, data = birds,
 +                     method = "cloglog")
+Model was fitted to log(SG5 + 1).
 >   
 >   ### compute asymptotic confidence bands for the distribution function
 >   ### for the first oberservation
@@ -89,11 +90,11 @@ Loading required package: mvtnorm
 >   ### fit count transformation model with cloglog link
 >   m_birds <- cotram(SG5 ~ AOT + AFS + GST + DBH + DWC + LOG, data = birds,
 +                     method = "cloglog")
+Model was fitted to log(SG5 + 1).
 >   logLik(m_birds)
 'log Lik.' -504.4 (df=13)
 > 
 >   ### classical likelihood inference
-> ## IGNORE_RDIFF_BEGIN
 >   summary(m_birds)
 
   Discrete Hazards Cox Count Transformation Model 
@@ -117,7 +118,6 @@ Log-Likelihood:
  -504.4 (df = 13)
 Likelihood-ratio Test: Chisq = 20.08 on 6 degrees of freedom; p = 0.00268
 
-> ## IGNORE_RDIFF_END
 > 
 >   ### coefficients of the linear predictor (discrete hazard ratios)
 >   exp(-coef(m_birds))
@@ -157,10 +157,11 @@ prob     [,1]  [,2]  [,3]
 > ### ** Examples
 > 
 > 
->   op <- options(digits = 3)
+>   op <- options(digits = 2)
 > 
 >   data("birds", package = "TH.data")
 >   cotram(SG5 ~ AOT + AFS + GST + DBH + DWC + LOG, data = birds)
+Model was fitted to log(SG5 + 1).
 
   Discrete Odds Count Transformation Model 
 
@@ -168,8 +169,8 @@ Call:
 cotram(formula = SG5 ~ AOT + AFS + GST + DBH + DWC + LOG, data = birds)
 
 Coefficients:
-     AOT      AFS      GST      DBH      DWC      LOG 
--0.00930  0.01743 -0.00188  0.00914  0.02082 -0.00411 
+    AOT     AFS     GST     DBH     DWC     LOG 
+-0.0093  0.0174 -0.0019  0.0091  0.0208 -0.0041 
 
 Log-Likelihood:
  -502 (df = 13)
@@ -180,12 +181,49 @@ Log-Likelihood:
 > 
 > 
 > 
+> cleanEx()
+> nameEx("mcotram")
+> ### * mcotram
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: mcotram
+> ### Title: Multivariate Count Conditional Transformation Models
+> ### Aliases: mcotram
+> ### Keywords: models
+> 
+> ### ** Examples
+> 
+> 
+> library("cotram")
+> data("spiders", package = "cotram")
+> 
+> ### for illustration only
+> OR <- 1      ### order of transformation function
+>              ### OR = 1 means log-linear, use OR ~ 6
+> M <- 100     ### number of Halton sequences, seem sufficient here
+> 
+> ## fit conditional marginal count transformation models
+> ## one for each species
+> ## (don't test as it takes too long for CRAN)
+> 
+> ### for example:
+> ### => constant negative dependence of Pardosa_lugubris and Coelotes_terrestris
+> ### => weak dependence of Harpactea_lepida and Pardosa_ferruginea
+> ###    for low elevations, negative dependence increasing with elevation
+> 
+> 
+> 
+> 
 > ### * <FOOTER>
 > ###
 > cleanEx()
+
+detaching ‘package:lattice’
+
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  1.342 0.041 1.382 0 0 
+Time elapsed:  87.225 2.57 87.157 0 0 
 > grDevices::dev.off()
 null device 
           1 

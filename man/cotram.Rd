@@ -17,7 +17,7 @@ cotram(formula, data, method = c("logit", "cloglog", "loglog", "probit"),
 \arguments{
   \item{formula}{an object of class \code{"formula"}: a symbolic description 
         of the model structure to be fitted.  The details of model
-        specification are given under \code{\link{tram}} and in the package vignette.
+        specification are given under \code{\link[tram]{tram}} and in the package vignette.
   }
   \item{data}{an optional data frame, list or environment (or object
         coercible by \code{as.data.frame} to a data frame) containing the
@@ -35,7 +35,7 @@ cotram(formula, data, method = c("logit", "cloglog", "loglog", "probit"),
        limit of the support of a smooth Bernstein polynomial (with the lower limit
        being set to 0). If a vector of two probabilites is specified, the corresponding
        quantiles of the response define the lower and upper limit of the support, 
-       respectively.
+       respectively. Note, that the support is rounded to integer values.
   }
   \item{log_first}{logical; if \code{TRUE}, a Bernstein polynomial is
   			defined on the log-scale for (y + 1).
@@ -58,7 +58,7 @@ cotram(formula, data, method = c("logit", "cloglog", "loglog", "probit"),
   \item{na.action}{a function which indicates what should happen when the data
         contain \code{NA}s.  The default is set to \code{na.omit}.
   }
-  \item{\dots}{additional arguments to \code{\link{tram}}.}
+  \item{\dots}{additional arguments to \code{\link[tram]{tram}}.}
 }
 \details{
 	Likelihood-based estimation of a fully parameterised conditional discrete
@@ -94,7 +94,7 @@ An object of class \code{cotram} and \code{tram}, with corresponding \code{coef}
 }
 \examples{
 
-  op <- options(digits = 3)
+  op <- options(digits = 2)
 
   data("birds", package = "TH.data")
   cotram(SG5 ~ AOT + AFS + GST + DBH + DWC + LOG, data = birds)

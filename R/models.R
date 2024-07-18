@@ -29,8 +29,8 @@ cotram <- function(formula, data, method = c("logit", "cloglog", "loglog", "prob
     plus_one <- as.integer(log_first)
     
     ## interval-censored count response for correct likelihood
-    td$response <- R_count(td$response, plus_one = plus_one)
-    td$mf[, td$rname] <- R_count(td$mf[, td$rname], plus_one = plus_one)
+    td$response <- .R.count(td$response, plus_one = plus_one)
+    td$mf[, td$rname] <- .R.count(td$mf[, td$rname], plus_one = plus_one)
     
     ## support
     support <- c(0, round(quantile(y, probs = prob)))[0:1 + length(prob)] + plus_one
@@ -59,5 +59,7 @@ cotram <- function(formula, data, method = c("logit", "cloglog", "loglog", "prob
     ret$data[, td$rname] <- y
     ret$count_response <- numeric_var(td$rname, support = min(y):max(y))
     class(ret) <- c("cotram", class(ret))
+    
+    if (log_first) message(paste0("Model was fitted to log(", td$rname, " + 1)."))
     ret
 }
