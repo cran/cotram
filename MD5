@@ -1,4 +1,4 @@
-9e79c8ed6f199ee54bc0feeec31f6f70 *DESCRIPTION
+f0b667ce2fd78c8fa6e42937ac36a212 *DESCRIPTION
 f10b7151d008be9ca13861cf97170723 *NAMESPACE
 7215747be16d5e74ae615c38cab8393b *R/confband.R
 93353687950b427f75ac1af3128c4d5d *R/mcotram.R
@@ -13,12 +13,12 @@ cd6180f372c9d2a217435fc43fed182f *build/vignette.rds
 1e4b8f3f5692b725292a87cbe603b4e8 *demo/00Index
 1aa63bcf2ea23b4eb206f90a2f78d983 *demo/aquabirds.R
 e9dee8e02c14dbdf2c1924e4458cdf39 *inst/CITATION
-38f975b9dec8ff21723815b97ff953bf *inst/NEWS.Rd
+f2ad4a1099e73fdcf877699f832884f8 *inst/NEWS.Rd
 922f78cd774f2f7e504d92a127ab5cb7 *inst/README
 1b2b84552fdf6e4891296c5678257a32 *inst/application/Ex_DVC.R
 439fb936b4e537bf4ea48b6bd9cb29a3 *inst/doc/cotram.R
 1d5cb446b598dd69458558ae7527af5b *inst/doc/cotram.Rnw
-9fbeb53c663a8479cb5e7d459bc3dc9a *inst/doc/cotram.pdf
+07c8abb67ff92f74f487a91516598c1a *inst/doc/cotram.pdf
 3a2c43e9ee1346039095ae00cfa44ce3 *inst/simulation/SIM_countDGP.R
 8488120d7b3c00f74a277bd3053ca4b3 *man/confband.Rd
 233582a6ae9eb24763bae5dbf6adb261 *man/cotram-methods.Rd
@@ -29,7 +29,7 @@ b6f0ed13c855f7be1c8fbfe40082bbaa *tests/Examples/cotram-Ex.Rout.save
 bf886cde3b829832fff0f4d2bd18d01d *tests/checks-Ex.R
 e79c3263e3dede807e570173c6a0f6ce *tests/confband-Ex.R
 d33e72f70682e2760a53ec1cca95bc0e *tests/confband-Ex.Rout.save
-53df6f6ddca1363418dddf257f4f21b2 *tests/models-Ex.R
+68a7eb3def802e2081a99d9ad54f3e65 *tests/models-Ex.R
 c988cb1b4cd8e543c25c4fc108522ab0 *tests/predict-Ex.R
 1d5cb446b598dd69458558ae7527af5b *vignettes/cotram.Rnw
 245bd633f8f0a59ca670c38e7a5a1c0c *vignettes/count_mlt.bib
