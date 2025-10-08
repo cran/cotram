@@ -1,7 +1,7 @@
 Package: cotram
 Title: Count Transformation Models
-Version: 0.5-2
-Date: 2024-09-18
+Version: 0.5-3
+Date: 2025-10-08
 Authors@R: c(
 	person(given = "Sandra", family = "Siegfried", role = c("aut", "cre"), 
 	email = "sandra.siegfried@alumni.uzh.ch",
@@ -32,10 +32,11 @@ URL: http://ctm.R-forge.R-project.org
 Encoding: UTF-8
 License: GPL-2
 NeedsCompilation: no
-Packaged: 2024-09-18 07:20:03 UTC; siegfried
-Author: Sandra Siegfried [aut, cre] (<https://orcid.org/0000-0002-7312-1001>),
-  Luisa Barbanti [aut] (<https://orcid.org/0000-0001-5352-5802>),
-  Torsten Hothorn [aut] (<https://orcid.org/0000-0001-8301-0471>)
+Packaged: 2025-10-08 08:18:48 UTC; siegfried
+Author: Sandra Siegfried [aut, cre] (ORCID:
+    <https://orcid.org/0000-0002-7312-1001>),
+  Luisa Barbanti [aut] (ORCID: <https://orcid.org/0000-0001-5352-5802>),
+  Torsten Hothorn [aut] (ORCID: <https://orcid.org/0000-0001-8301-0471>)
 Maintainer: Sandra Siegfried <sandra.siegfried@alumni.uzh.ch>
 Repository: CRAN
-Date/Publication: 2024-09-18 09:40:02 UTC
+Date/Publication: 2025-10-08 09:10:02 UTC
